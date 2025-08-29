@@ -1,0 +1,2572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAFTIS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg-dark: #0a0a0a;
+            --color-bg-page: #ffffff;
+            --color-bg-alt: #f8f9fa;
+            --color-bg-soft: #f5f5f5;
+            --color-surface: #ffffff;
+            --color-surface-alt: #f8f9ff;
+            --color-surface-muted: #e0e0e0;
+            --color-text-strong: #333333;
+            --color-text: #222222;
+            --color-text-mid: #555555;
+            --color-text-muted: #666666;
+            --color-text-subtle: #9ca3af;
+            --color-text-inverse: #ffffff;
+            --color-border: #e5e7eb;
+            --color-border-strong: #d1d5db;
+            --color-primary: #667eea;
+            --color-primary-hover: #5a67d8;
+            --color-primary-faint: #eef1ff;
+            --color-focus-ring: #93a6ff;
+            --color-success: #10b981;
+            --color-error: #dc2626;
+            --color-gradient-start: #1e1b4b;
+            --color-gradient-mid: #312e81;
+            --color-featured-start: #ff6b6b;
+            --color-featured-end: #ff8e8e;
+            --color-accent-cyan-rgb: 0,255,255;
+            --shadow-elevated: 0 5px 15px rgba(0,0,0,0.1);
+            --shadow-pop: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        html {
+            overflow-x: hidden;
+            scroll-behavior: smooth; /* enable native smooth scrolling */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+    /* Ensure anchored sections aren't hidden under fixed navbar */
+    section { scroll-margin-top: 90px; }
+
+        .navbar {
+            background: transparent;
+            box-shadow: none;
+            padding: 1rem 0.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 25px;
+            width: auto;
+            transition: filter 0.35s ease, transform 0.3s ease;
+            /* Force dark (black) logo to appear pure white before scroll */
+            filter: invert(100%) brightness(115%) contrast(105%) saturate(0%);
+            /* Safari fallback */
+            -webkit-filter: invert(100%) brightness(115%) contrast(105%) saturate(0%);
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        /* Mobile Nav Toggle (hidden desktop) */
+        .nav-toggle {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .3s ease, border-color .3s ease;
+            position: relative;
+        }
+        .nav-toggle:focus-visible { outline: 3px solid #93a6ff; outline-offset: 2px; }
+        .nav-toggle:hover { background: rgba(255,255,255,0.2); }
+        .nav-toggle-bar {
+            width: 22px;
+            height: 2px;
+            background: var(--color-text-inverse);
+            display: block;
+            margin: 4px 0;
+            transition: transform .35s ease, opacity .35s ease, background .35s ease;
+        }
+        .navbar.scrolled .nav-toggle { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); }
+        .navbar.scrolled .nav-toggle:hover { background: rgba(0,0,0,0.1); }
+        .navbar.scrolled .nav-toggle-bar { background: var(--color-text-strong); }
+        .nav-toggle.active .nav-toggle-bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .nav-toggle.active .nav-toggle-bar:nth-child(2) { opacity: 0; }
+        .nav-toggle.active .nav-toggle-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        /* Mobile menu panel */
+        @media (max-width: 880px) {
+            .nav-toggle { display: block; }
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 78%;
+                max-width: 340px;
+                /* Removed backdrop blur per request */
+                background: var(--color-bg-dark); /* solid background using variable */
+                flex-direction: column;
+                padding: 6rem 2rem 2rem;
+                gap: 1.4rem;
+                transform: translateX(100%);
+                transition: transform .45s cubic-bezier(.65,.05,.36,1);
+                box-shadow: -4px 0 22px -6px rgba(0,0,0,0.35);
+                z-index: 1500;
+            }
+            .nav-menu.open { transform: translateX(0); }
+            .nav-menu li a { font-size: 1.05rem; font-weight: 600; letter-spacing: .5px; }
+            body.menu-open { overflow: hidden; }
+            .mobile-backdrop {
+                position: fixed; inset: 0; background: rgba(0,0,0,.55); /* slightly darker since blur removed */
+                opacity: 0; transition: opacity .35s ease; z-index: 1400; pointer-events: none;
+            }
+            .mobile-backdrop.show { opacity: 1; pointer-events: auto; }
+        }
+
+    .nav-menu li a { text-decoration: none; color: var(--color-text-inverse); font-weight: 500; transition: color 0.3s ease; }
+    .nav-menu li a:hover { color: var(--color-primary); }
+    .navbar.scrolled .nav-menu li a { color: var(--color-text-strong); }
+    .navbar.scrolled .nav-menu li a:hover { color: var(--color-primary); }
+
+        /* Restore original (unfiltered) logo once scrolled */
+        .navbar.scrolled .logo-img {
+            filter: none;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .hero-section {
+            background: var(--color-bg-dark);
+            color: var(--color-text-inverse);
+            padding: 6rem 2rem 6rem 2rem;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* Futuristic Background Animation */
+        .hero-section::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(var(--color-accent-cyan-rgb), 0.05) 0%, transparent 50%);
+            animation: glowPulse 8s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(var(--color-accent-cyan-rgb), 0.8);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 8s; }
+
+        /* Data Stream Effect */
+        .data-stream {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(var(--color-accent-cyan-rgb), 0.1), transparent);
+            animation: dataFlow 15s linear infinite;
+            z-index: 1;
+        }
+
+        /* Animation Keyframes */
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: translateY(-20px) scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        @keyframes dataFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Ensure content is above background */
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-headline {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtext {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+    .cta-primary { background: var(--color-bg-page); color: var(--color-primary); }
+    .cta-primary:hover { background: var(--color-bg-alt); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .cta-secondary { background: transparent; color: var(--color-text-inverse); border: 2px solid var(--color-text-inverse); }
+    .cta-secondary:hover { background: var(--color-bg-page); color: var(--color-primary); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        @media (max-width: 768px) {
+            .hero-headline {
+                font-size: 2.5rem;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .hero-headline { font-size: 2.05rem; }
+            .hero-subtext { font-size: 1rem; }
+            .cta-button { width: 100%; text-align: center; }
+        }
+
+        /* Quote Bridge Section */
+        .quote-bridge {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 1.5rem 2rem;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 4rem);
+            bottom: -3.5rem;
+            z-index: 10;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .quote-bridge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(0, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(102, 126, 234, 0.06) 0%, transparent 50%),
+                linear-gradient(45deg, transparent 30%, rgba(0, 255, 255, 0.03) 50%, transparent 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .quote-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .quote-content {
+            text-align: center;
+            color: var(--color-text-inverse);
+            position: relative;
+            z-index: 3;
+        }
+
+        .quote-icon {
+            font-size: 1.8rem;
+            margin-right: 0.8rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 12px rgba(102, 126, 234, 0.8));
+            animation: pulse 3s ease-in-out infinite;
+            vertical-align: middle;
+        }
+
+    .cyber-quote { font-size: 1.2rem; font-weight: 600; line-height: 1.4; margin-bottom: 1rem; font-style: italic; color: var(--color-text-inverse); text-shadow: 0 2px 8px rgba(0,0,0,0.5); display: inline-block; vertical-align: middle; }
+
+        .quote-author {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 500;
+            color: var(--color-primary);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* About Section Styles */
+        .about-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 6rem 2rem 6rem 2rem;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: visible;
+            margin-top: 0;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .about-header {
+            margin-bottom: 3rem;
+        }
+
+    .about-title { font-size: 3.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text-inverse); }
+
+    .about-subtitle { font-size: 1.2rem; color: var(--color-text-inverse); margin-bottom: 2rem; }
+
+        .about-content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .about-text-content {
+            flex: 1;
+            text-align: left;
+        }
+
+    .about-description { font-size: 1.1rem; line-height: 1.8; color: var(--color-text-inverse); margin-bottom: 2rem; }
+
+    .about-feature { font-size: 1.1rem; color: var(--color-primary); font-weight: 600; margin-bottom: 1.5rem; }
+
+        .about-highlights {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+    .highlight-item { display: flex; align-items: center; justify-content: center; background: var(--color-surface-muted); padding: 0.8rem 1.2rem; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+
+
+    .highlight-text { font-size: 1rem; font-weight: 500; color: var(--color-text-inverse); }
+
+        .about-logo-section {
+            flex: 0.5;
+            display: flex;
+            justify-content: center;
+        }
+
+    .partnership-badge { background: var(--color-surface);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .cybermoksha-logo {
+            height: 100px;
+            width: auto;
+            margin-bottom: 1rem;
+        }
+
+    .badge-label { font-size: 0.9rem; color: var(--color-text-inverse); margin-bottom: 0.5rem; }
+
+        .badge-subtitle {
+            font-size: 0.8rem;
+            color: var(--color-text-inverse);
+        }
+
+        @media (max-width: 992px) {
+            .about-content-wrapper {
+                flex-direction: column;
+                text-align: center;
+            }
+            .about-logo-section {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Quote bridge scaling down for tablet & mobile */
+            .quote-bridge { padding: 0.65rem 0.9rem; bottom: -2.8rem; }
+            .quote-icon { font-size: 1.35rem; margin-right: 0.6rem; }
+            .cyber-quote { font-size: 1.05rem; line-height: 1.35; margin-bottom: 0.4rem; }
+            .quote-author { font-size: 0.8rem; }
+            .about-title {
+                font-size: 2.5rem;
+            }
+            .about-subtitle {
+                font-size: 1rem;
+            }
+            .cybermoksha-logo {
+                height: 80px;
+            }
+            
+            .quote-bridge {
+                width: calc(100% - 2rem);
+            }
+            
+            .hero-section {
+                padding: 6rem 1rem 6rem 1rem;
+            }
+            
+            .about-section {
+                padding: 6rem 1rem 6rem 1rem;
+                margin-top: 0;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .quote-bridge { bottom: -3.4rem; padding: 0.55rem 0.8rem; }
+            .quote-icon { font-size: 1.2rem; margin-right: 0.5rem; }
+            .cyber-quote { font-size: 0.95rem; }
+            .about-section { padding-top: 7rem; }
+            .about-description { font-size: 1rem; }
+            .highlight-item { flex: 1 1 100%; }
+        }
+
+        /* Why Choose Baftis Academy Section */
+        .why-baftis-section {
+            background: var(--color-bg-page);
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: visible;
+        }
+
+        .why-baftis-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .why-baftis-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .why-baftis-title {
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: var(--color-text-strong);
+            margin-bottom: 0.5rem;
+        }
+
+        .why-baftis-subtitle {
+            font-size: 1.1rem;
+            color: var(--color-text-muted);
+        }
+
+        .why-baftis-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .why-feature-card {
+            background: var(--color-surface);
+            border-radius: 18px;
+            box-shadow: var(--shadow-elevated);
+            padding: 2rem 1.5rem;
+            min-width: 260px;
+            max-width: 340px;
+            flex: 1 1 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .why-feature-card:hover {
+            transform: translateY(-8px) rotateY(5deg);
+            box-shadow: var(--shadow-pop);
+            border-color: var(--color-primary);
+        }
+
+        .why-feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+            z-index: -1;
+        }
+
+        .why-feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .why-feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .why-feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .why-feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .why-feature-card:hover .why-feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .why-feature-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--color-text);
+            margin-bottom: 0.7rem;
+            transition: color 0.3s ease;
+        }
+
+        .why-feature-card:hover .why-feature-title {
+            color: var(--color-primary);
+        }
+
+        .why-feature-desc {
+            color: var(--color-text-mid);
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        /* Programs Offered Section */
+        .programs-section {
+            background: var(--color-bg-alt);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: visible;
+            margin-top: 0;
+        }
+
+        .programs-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .programs-header {
+            margin-bottom: 2rem;
+        }
+
+    .programs-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text-strong); }
+
+    .programs-subtitle { font-size: 1rem; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            justify-items: center;
+        }
+
+        .program-card { background: var(--color-surface);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow-elevated);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+    .program-card:hover { transform: translateY(-8px) rotateY(5deg); box-shadow: var(--shadow-pop); border-color: var(--color-primary); }
+
+        .program-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .program-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+            z-index: -1;
+        }
+
+        .program-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .program-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .program-card:hover::after {
+            opacity: 1;
+        }
+
+        .program-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+    .program-level { background: var(--color-primary); color: var(--color-text-inverse);
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+    .program-card:hover .program-level { background: var(--color-primary-hover); transform: scale(1.05); }
+
+    .program-name { font-size: 1.4rem; font-weight: 700; color: var(--color-text-strong); margin-bottom: 0.6rem; line-height: 1.3; }
+
+    .program-duration { font-size: 1rem; color: var(--color-text-muted); margin-bottom: 1rem; font-weight: 600; }
+
+        .program-eligibility {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+    .eligibility-label { font-size: 0.8rem; color: var(--color-text-muted); font-weight: 500; }
+
+    .eligibility-value { font-size: 0.9rem; font-weight: 600; color: var(--color-text-strong); }
+
+    .program-description { font-size: 0.9rem; color: var(--color-text-mid); line-height: 1.5; margin-bottom: 1.5rem; flex-grow: 1; }
+
+        .program-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+    .feature-item { background: var(--color-surface-muted); padding: 0.26rem 0.8rem; border-radius: 11px; font-size: 0.8rem; font-weight: 500; color: var(--color-text-strong); transition: all 0.3s ease; display: flex; align-items: center; min-width: 72px; justify-content: center; }
+    .program-card:hover .feature-item { background: var(--color-primary); color: var(--color-text-inverse); transform: translateY(-2px) scale(1.07); }
+
+    .enroll-btn { background: var(--color-primary); color: var(--color-text-inverse);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+    .enroll-btn:hover { background: var(--color-primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+        .enroll-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .enroll-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .enroll-btn:hover::before {
+            left: 100%;
+        }
+
+    .featured-badge { position: absolute; top: 8px; right: 8px; background: linear-gradient(45deg, var(--color-featured-start), var(--color-featured-end)); color: var(--color-text-inverse);
+            padding: 0.18rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Interactive hover effects for program cards */
+        .program-card:hover .featured-badge {
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .programs-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .programs-section {
+                padding: 2rem 1rem;
+            }
+            
+            .programs-title {
+                font-size: 2rem;
+            }
+            
+            .programs-subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .programs-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .program-card {
+                padding: 1.2rem;
+            }
+            
+            .program-name {
+                font-size: 1.3rem;
+            }
+            
+            .program-duration {
+                font-size: 0.9rem;
+            }
+            
+            .program-description {
+                font-size: 0.85rem;
+            }
+            
+            .program-features {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .feature-item {
+                padding: 0.3rem 0.7rem;
+                font-size: 0.75rem;
+            }
+            
+            .enroll-btn {
+                padding: 0.7rem 1.3rem;
+                font-size: 0.9rem;
+            }
+
+            .why-baftis-section {
+                padding: 2rem 1rem;
+            }
+            
+            .why-baftis-title {
+                font-size: 2rem;
+            }
+            
+            .why-baftis-subtitle {
+                font-size: 1rem;
+            }
+            
+            .why-baftis-features {
+                gap: 1.5rem;
+            }
+            
+            .why-feature-card {
+                min-width: 240px;
+                padding: 1.5rem 1.2rem;
+            }
+            
+            .why-feature-title {
+                font-size: 1rem;
+            }
+            
+            .why-feature-desc {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .programs-title { font-size: 1.85rem; }
+            .program-card { border-radius: 18px; }
+            .program-name { font-size: 1.2rem; }
+            
+            .why-baftis-title { font-size: 1.85rem; }
+            .why-feature-card { border-radius: 15px; }
+            .why-feature-title { font-size: 0.95rem; }
+        }
+
+        /* FAQ Accordion Styles */
+        .faq-section { position: relative; }
+        .faq-list { display: flex; flex-direction: column; gap: 1rem; }
+    .faq-item { border: 1px solid var(--color-border); border-radius: 14px; background: linear-gradient(180deg,var(--color-bg-page) 0%,var(--color-bg-alt) 100%); box-shadow: 0 4px 14px rgba(0,0,0,0.06); overflow: hidden; transition: box-shadow .3s ease, border-color .3s ease; }
+    .faq-item.open { border-color: var(--color-primary); box-shadow: 0 6px 18px rgba(102,126,234,0.20); }
+    .faq-question-button { width: 100%; background: none; border: none; text-align: left; padding: 1.1rem 1.25rem 1.1rem 1.25rem; font-size: 1.05rem; font-weight: 600; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .faq-question-button:hover { background: var(--color-primary-faint); }
+    .faq-question-button:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; border-radius: 10px; }
+        .faq-question-text { flex: 1; }
+    .faq-indicator { width: 28px; height: 28px; min-width:28px; border-radius: 50%; background: var(--color-primary-faint); display: flex; align-items: center; justify-content: center; color: var(--color-primary-hover); font-weight: 700; font-size: 1.1rem; transition: transform .35s ease, background .35s ease, color .35s ease; box-shadow: inset 0 0 0 2px var(--color-primary-faint); }
+    .faq-item.open .faq-indicator { transform: rotate(180deg); background: var(--color-primary); color: var(--color-text-inverse); box-shadow:none; }
+        .faq-answer-wrapper { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height .45s ease, padding .45s ease; 
+            padding: 0 1.25rem; 
+        }
+        .faq-item.open .faq-answer-wrapper { padding: 0 1.25rem 1.2rem; }
+    .faq-answer { color: var(--color-text-mid); font-size: .98rem; line-height: 1.55; }
+    .faq-item:focus-within { border-color: var(--color-primary); }
+        @media (max-width: 640px){
+            .faq-title { font-size: 2rem !important; }
+            .faq-question-button { font-size: 1rem; padding: 1rem 1rem 1rem 1rem; }
+            .faq-answer { font-size: .95rem; }
+        }
+
+    /* Lead Form Styles */
+    /* Reduced bottom padding to eliminate gap above footer */
+    .lead-form-section { background:var(--color-surface-alt); padding:4rem 2rem 1.5rem; position:relative; overflow:hidden; }
+    .lead-form-section::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 85% 15%,rgba(102,126,234,.18),transparent 60%), radial-gradient(circle at 10% 90%,rgba(99,179,237,.18),transparent 65%); pointer-events:none; }
+    .lead-form-container { max-width:1000px; margin:0 auto; position:relative; z-index:2; }
+    .lead-form-header { text-align:center; margin-bottom:2.3rem; }
+    .lead-form-title { font-size:2.35rem; font-weight:700; color:var(--color-text-strong); margin:0 0 .6rem; }
+    .lead-form-sub { font-size:1.05rem; color:var(--color-text-mid); }
+    .lead-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem 1.4rem; }
+    .lead-grid .full { grid-column:1 / -1; }
+    .form-field { display:flex; flex-direction:column; gap:.45rem; }
+    .form-field label { font-size:.8rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--color-text-mid); }
+    .form-input, .form-select, .form-textarea { width:100%; padding:.85rem 1rem; border:1px solid var(--color-border-strong); border-radius:12px; font-size:.95rem; background:var(--color-bg-page); transition:border-color .25s, box-shadow .25s, background .25s; font-family:inherit; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline:none; border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(102,126,234,.25); }
+    .form-textarea { min-height:140px; resize:vertical; }
+    .lead-form-actions { margin-top:1.4rem; display:flex; flex-direction:column; align-items:flex-start; gap:1rem; }
+    .lead-submit { background:var(--color-primary); color:var(--color-text-inverse); border:none; padding:1rem 2.2rem; font-size:1rem; font-weight:600; border-radius:60px; cursor:pointer; position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:.6rem; letter-spacing:.5px; box-shadow:0 6px 18px rgba(102,126,234,.35); transition:transform .25s, box-shadow .25s, background .25s; }
+    .lead-submit:hover { background:var(--color-primary-hover); transform:translateY(-2px); box-shadow:0 10px 26px rgba(102,126,234,.45); }
+    .lead-submit:active { transform:translateY(0); }
+    .lead-submit::before { content:""; position:absolute; inset:0; background:linear-gradient(120deg,rgba(255,255,255,.25),transparent 60%); transform:translateX(-60%); transition:transform .6s ease; }
+    .lead-submit:hover::before { transform:translateX(0); }
+    .consent-note { font-size:.7rem; color:var(--color-text-subtle); max-width:520px; line-height:1.4; }
+    .error-text { font-size:.7rem; color:var(--color-error); font-weight:600; display:none; }
+    .form-field.invalid .error-text { display:block; }
+    .form-field.invalid .form-input, .form-field.invalid .form-select, .form-field.invalid .form-textarea { border-color:var(--color-error); box-shadow:0 0 0 2px rgba(220,38,38,.25); }
+    .success-banner { display:none; background:var(--color-success); color:var(--color-text-inverse); padding:1rem 1.25rem; border-radius:14px; font-size:.95rem; font-weight:500; box-shadow:0 4px 18px rgba(16,185,129,.4); animation:fadeSlide .6s ease; }
+    .success-banner.show { display:flex; align-items:center; gap:.65rem; }
+    @keyframes fadeSlide { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:translateY(0);} }
+    @media (max-width:880px){ .lead-grid { grid-template-columns:1fr; } }
+    @media (max-width:640px){ .lead-form-title { font-size:2rem; } }
+
+    /* Footer Styles */
+    .site-footer { background:var(--color-bg-dark); color:var(--color-text-subtle); padding:3.5rem 2rem 2.5rem; position:relative; overflow:hidden; }
+    .site-footer::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 20% 30%,rgba(102,126,234,.18),transparent 60%), radial-gradient(circle at 80% 70%,rgba(56,189,248,.16),transparent 65%); pointer-events:none; }
+    .footer-inner { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2.2rem; position:relative; z-index:2; }
+    .footer-brand { display:flex; flex-direction:column; gap:1rem; }
+    .footer-logo { 
+        height:34px; 
+        width:auto; 
+        /* Make dark logo appear white on dark footer */
+        filter: invert(100%) brightness(115%) contrast(105%) saturate(0%) drop-shadow(0 4px 10px rgba(0,0,0,.6));
+        -webkit-filter: invert(100%) brightness(115%) contrast(105%) saturate(0%) drop-shadow(0 4px 10px rgba(0,0,0,.6));
+        transition: filter .35s ease;
+    }
+    .footer-tagline { font-size:.9rem; line-height:1.5; max-width:320px; color:var(--color-text-subtle); }
+    .footer-heading { font-size:.95rem; text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin-bottom:1rem; color:var(--color-text-inverse); }
+    .footer-links { list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+    .footer-links a { color:var(--color-text-subtle); text-decoration:none; font-size:.9rem; transition:color .25s; }
+    .footer-links a:hover { color:var(--color-text-inverse); }
+    .footer-contact div { font-size:.85rem; line-height:1.5; color:var(--color-text-subtle); display:flex; gap:.5rem; align-items:flex-start; }
+    .footer-contact a { color:var(--color-primary); text-decoration:none; }
+    .footer-contact a:hover { color:var(--color-text-inverse); }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,.08); margin-top:2.5rem; padding-top:1.2rem; font-size:.75rem; display:flex; flex-wrap:wrap; gap:.8rem; justify-content:space-between; color:#6b7280; position:relative; z-index:2; }
+    .social-links { display:flex; gap:.6rem; }
+    .social-links a { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,.06); color:#9ca3af; text-decoration:none; font-size:.9rem; transition:background .25s,color .25s, transform .25s; }
+    .social-links a:hover { background:var(--color-primary); color:var(--color-text-inverse); transform:translateY(-3px); }
+    @media (max-width:640px){ .site-footer { padding:3rem 1.25rem 2.2rem; } .footer-bottom { flex-direction:column; align-items:flex-start; } }
+
+            /* Program Tools Styles */
+        .program-tools {
+            background: linear-gradient(135deg, var(--color-primary-faint) 0%, var(--color-surface) 100%);
+            border-radius: 20px;
+            box-shadow: var(--shadow-elevated);
+            border: 2px solid var(--color-primary-light);
+            margin: 3rem 0;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .program-tools::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light), var(--color-primary));
+        }
+
+        .program-tools-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .program-tools-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-text-strong);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .program-tools-subtitle {
+            font-size: 1.1rem;
+            color: var(--color-text-mid);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+
+
+    .quiz-btn {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+        color: var(--color-text-inverse);
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        padding: 1rem 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .quiz-btn:hover {
+        background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .quiz-btn:active {
+        transform: translateY(0) scale(0.95);
+    }
+
+    .quiz-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .quiz-btn:hover::before {
+        left: 100%;
+    }
+
+    .quiz-icon {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+
+
+            .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-subtle);
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: var(--color-error);
+            color: var(--color-text-inverse);
+            transform: scale(1.1);
+        }
+
+
+
+            /* Program Roadmap Styles */
+        .program-roadmap {
+            background: linear-gradient(135deg, var(--color-bg-soft) 0%, var(--color-surface) 100%);
+            border-radius: 15px;
+            box-shadow: var(--shadow-elevated);
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid var(--color-border);
+        }
+
+        .program-roadmap h3 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--color-text-strong);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+    .roadmap-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+            .roadmap-step {
+            text-align: center;
+            flex: 1;
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .roadmap-step:hover {
+            background: var(--color-primary-faint);
+            transform: translateY(-3px);
+        }
+
+    .step-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--color-primary);
+    }
+
+    .step-title {
+        font-size: 1rem;
+        color: var(--color-text-strong);
+    }
+
+    .step-duration {
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+    }
+
+            .step-arrow {
+            font-size: 1.5rem;
+            color: var(--color-text-subtle);
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-step:hover .step-arrow {
+            color: var(--color-primary);
+            transform: scale(1.2);
+        }
+
+    .active .step-icon, .active .step-title, .active .step-duration, .active .step-arrow {
+        color: var(--color-text-inverse);
+    }
+
+    .active .progress-bar {
+        background: var(--color-primary);
+    }
+
+            .progress-bar {
+            height: 6px;
+            background: var(--color-border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+            border-radius: 3px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+    
+
+            .progress-text {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            text-align: center;
+            display: block;
+        }
+
+
+
+
+
+        /* Tooltip styles */
+        .feature-item {
+            position: relative;
+        }
+
+        .feature-item[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-text-strong);
+            color: var(--color-text-inverse);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow-pop);
+            pointer-events: none;
+            opacity: 0;
+            animation: tooltipFadeIn 0.3s ease forwards;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        @keyframes tooltipFadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .feature-item[data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--color-text-strong);
+            margin-bottom: -0.5rem;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive design for program tools */
+        @media (max-width: 768px) {
+            .program-tools {
+                padding: 2rem 1.5rem;
+                margin: 2rem 0;
+            }
+
+            .program-tools-title {
+                font-size: 1.5rem;
+            }
+
+            .program-tools-subtitle {
+                font-size: 1rem;
+            }
+
+            .quiz-btn {
+                padding: 0.9rem 1.8rem;
+                font-size: 1rem;
+            }
+
+            .roadmap-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .roadmap-step {
+                margin-bottom: 1rem;
+            }
+
+            .step-arrow {
+                display: none;
+            }
+
+
+        }
+
+        @media (max-width: 480px) {
+            .programs-section {
+                padding: 2rem 1rem;
+            }
+
+            .programs-title {
+                font-size: 2rem;
+            }
+
+            .program-card {
+                padding: 1rem;
+            }
+
+            .program-tools {
+                padding: 1.5rem 1rem;
+                margin: 1.5rem 0;
+            }
+
+            .program-tools-title {
+                font-size: 1.4rem;
+            }
+
+            .program-tools-subtitle {
+                font-size: 0.95rem;
+            }
+
+            .quiz-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Enhanced program card interactions */
+        .program-card {
+            position: relative;
+        }
+
+        .program-card:hover .program-progress {
+            transform: scale(1.05);
+        }
+
+        .program-progress {
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        /* Active roadmap step styling */
+        .roadmap-step.active {
+            background: var(--color-primary);
+            color: var(--color-text-inverse);
+            border-radius: 10px;
+            padding: 1rem;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-pop);
+        }
+
+        .roadmap-step.active .step-icon,
+        .roadmap-step.active .step-title,
+        .roadmap-step.active .step-duration {
+            color: var(--color-text-inverse);
+        }
+
+
+
+        /* Quiz modal enhancements */
+        .quiz-option:hover {
+            background: var(--color-primary-faint) !important;
+            border-color: var(--color-primary) !important;
+            transform: translateY(-2px);
+        }
+
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <img src="assets/images/Baftis_Name.png" alt="BAFTIS Logo" class="logo-img">
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <ul class="nav-menu" id="primary-navigation">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#courses">Courses</a></li>
+                <li><a href="#why-choose-baftis">Why Baftis</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#enquire">Enroll Now</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="mobile-backdrop" aria-hidden="true"></div>
+
+    <section class="hero-section" id="home">
+        <!-- Background Animation Elements -->
+        <div class="data-stream"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-container">
+            <h1 class="hero-headline">Become a Certified Cybersecurity Professional</h1>
+            <p class="hero-subtext">Hands-on training in Ethical hacking, Cyber forensics, network security, SOC and more. Powered by Cyber Moksha - recognized by NCSS as a National Cyber Research and Development Center.</p>
+            <div class="hero-cta">
+                <a href="#enquire" class="cta-button cta-primary">Enquire Now</a>
+                <a href="#brochure" class="cta-button cta-secondary">Download Brochure</a>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="quote-bridge">
+        <div class="quote-container">
+            <div class="quote-content">
+                <div class="quote-icon">🛡️</div>
+                <blockquote class="cyber-quote">
+                    "In cybersecurity, the best defense is a good offense. Knowledge is your strongest weapon."
+                </blockquote>
+                <div class="quote-author">— Cybersecurity Proverb</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section" id="about">
+        <div class="about-container">
+            <div class="about-header">
+                <h2 class="about-title">About Baftis Academy</h2>
+                <div class="about-subtitle">Empowering the Next Generation of Cybersecurity Professionals</div>
+            </div>
+            
+            <div class="about-content-wrapper">
+                <div class="about-text-content">
+                    <div class="about-description">
+                        <p>
+                            Baftis Academy, in partnership with <strong>Cyber Moksha</strong>, delivers advanced training in Cybersecurity
+                            and Ethical Hacking. Our mission is to build highly skilled professionals who can safeguard the
+                            digital world against cyber threats.
+                        </p>
+                        <p class="about-feature">
+                            All programs are designed to provide real-world exposure and practical skills.
+                        </p>
+                    </div>
+                    
+                    <div class="about-highlights">
+                        <div class="highlight-item">
+                            <div class="highlight-icon">🔒</div>
+                            <div class="highlight-text">Advanced Cybersecurity Training</div>
+                        </div>
+                        <div class="highlight-item">
+                            <div class="highlight-icon">⚡</div>
+                            <div class="highlight-text">Real-World Practical Skills</div>
+                        </div>
+                        <div class="highlight-item">
+                            <div class="highlight-icon">🎯</div>
+                            <div class="highlight-text">Industry-Recognized Certification</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="about-logo-section">
+                    <div class="partnership-badge">
+                        <div class="badge-label">In Partnership With</div>
+                        <img src="assets/images/cybermoksha_LOGO.png" alt="CyberMoksha Logo" class="cybermoksha-logo">
+                        <div class="badge-subtitle">National Cyber Research & Development Center</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs Offered Section -->
+    <section class="programs-section" id="courses">
+        <div class="programs-container">
+            <div class="programs-header">
+                <h2 class="programs-title">Programs Offered</h2>
+                <div class="programs-subtitle">Choose Your Path to Cybersecurity Excellence</div>
+                
+
+            </div>
+            
+
+            
+            <div class="programs-grid" id="programs-grid">
+                <div class="program-card" tabindex="0" role="button" aria-label="Certificate in Cybersecurity program">
+                    <div class="program-header">
+                        <div class="program-level">Certificate</div>
+                    </div>
+                    <h3 class="program-name">Certificate in Cybersecurity</h3>
+                    <div class="program-duration">3 Months</div>
+                    <div class="program-eligibility">
+                        <span class="eligibility-label">Eligibility:</span>
+                        <span class="eligibility-value">+2 Pass</span>
+                    </div>
+                    <p class="program-description">
+                        Learn the fundamentals of cybersecurity, ethical hacking, and basic security tools.
+                    </p>
+                    
+
+                    
+                    <div class="program-features">
+                        <div class="feature-item" data-tooltip="Learn core cybersecurity concepts and principles">🔐 Fundamentals</div>
+                        <div class="feature-item" data-tooltip="Understand ethical hacking methodologies">⚡ Ethical Hacking</div>
+                        <div class="feature-item" data-tooltip="Master essential security tools">🛠️ Security Tools</div>
+                    </div>
+                    
+                    <div class="program-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 25%"></div>
+                        </div>
+                        <span class="progress-text">Level 1 of 4</span>
+                    </div>
+                    
+                    <button class="enroll-btn">Enroll Now</button>
+                </div>
+
+                <div class="program-card" tabindex="0" role="button" aria-label="Diploma in Cybersecurity & Ethical Hacking program">
+                    <div class="program-header">
+                        <div class="program-level">Diploma</div>
+                    </div>
+                    <h3 class="program-name">Diploma in Cybersecurity & Ethical Hacking</h3>
+                    <div class="program-duration">6 Months</div>
+                    <div class="program-eligibility">
+                        <span class="eligibility-label">Eligibility:</span>
+                        <span class="eligibility-value">+2 Pass</span>
+                    </div>
+                    <p class="program-description">
+                        Covers ethical hacking, penetration testing, and digital forensics.
+                    </p>
+                    
+
+                    
+                    <div class="program-features">
+                        <div class="feature-item" data-tooltip="Master ethical hacking techniques">🎯 Ethical Hacking</div>
+                        <div class="feature-item" data-tooltip="Learn penetration testing methodologies">🔍 Penetration Testing</div>
+                        <div class="feature-item" data-tooltip="Understand digital forensics">📊 Digital Forensics</div>
+                    </div>
+                    
+                    <div class="program-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 50%"></div>
+                        </div>
+                        <span class="progress-text">Level 2 of 4</span>
+                    </div>
+                    
+                    <button class="enroll-btn">Enroll Now</button>
+                </div>
+
+                <div class="program-card" tabindex="0" role="button" aria-label="Advanced Diploma in Cybersecurity & Ethical Hacking program">
+                    <div class="program-header">
+                        <div class="program-level">Advanced Diploma</div>
+                    </div>
+                    <h3 class="program-name">Advanced Diploma in Cybersecurity & Ethical Hacking</h3>
+                    <div class="program-duration">9 Months</div>
+                    <div class="program-eligibility">
+                        <span class="eligibility-label">Eligibility:</span>
+                        <span class="eligibility-value">+2 Pass</span>
+                    </div>
+                    <p class="program-description">
+                        Comprehensive coverage of advanced security operations, cryptography, and vulnerability assessment.
+                    </p>
+                    
+
+                    
+                    <div class="program-features">
+                        <div class="feature-item" data-tooltip="Advanced security operations and management">🔐 Advanced Security</div>
+                        <div class="feature-item" data-tooltip="Cryptography and encryption techniques">🔑 Cryptography</div>
+                        <div class="feature-item" data-tooltip="Comprehensive vulnerability assessment">⚠️ Vulnerability Assessment</div>
+                    </div>
+                    
+                    <div class="program-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                        <span class="progress-text">Level 3 of 4</span>
+                    </div>
+                    
+                    <button class="enroll-btn">Enroll Now</button>
+                </div>
+
+                <div class="program-card featured" tabindex="0" role="button" aria-label="PG Diploma in Cybersecurity & Ethical Hacking program">
+                    <div class="program-header">
+                        <div class="program-level">PG Diploma</div>
+                        <div class="featured-badge">Most Popular</div>
+                    </div>
+                    <h3 class="program-name">PG Diploma in Cybersecurity & Ethical Hacking</h3>
+                    <div class="program-duration">12 Months</div>
+                    <div class="program-eligibility">
+                        <span class="eligibility-label">Eligibility:</span>
+                        <span class="eligibility-value">Degree Pass</span>
+                    </div>
+                    <p class="program-description">
+                        Advanced curriculum with enterprise security, SOC operations, IDS, and real-world cybersecurity projects.
+                    </p>
+                    
+
+                    
+                    <div class="program-features">
+                        <div class="feature-item" data-tooltip="Enterprise-level security architecture">🏢 Enterprise Security</div>
+                        <div class="feature-item" data-tooltip="Security Operations Center management">👥 SOC Operations</div>
+                        <div class="feature-item" data-tooltip="Intrusion Detection and monitoring">🚨 IDS & Monitoring</div>
+                    </div>
+                    
+                    <div class="program-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-text">Level 4 of 4</span>
+                    </div>
+                    
+                    <button class="enroll-btn">Enroll Now</button>
+                </div>
+            </div>
+            
+            <!-- Find Your Program Button -->
+            <div class="program-tools">
+                <div class="program-tools-content">
+                    <h3 class="program-tools-title">Not Sure Which Program is Right for You?</h3>
+                    <p class="program-tools-subtitle">Take our quick assessment to find the perfect cybersecurity program that matches your goals and experience level.</p>
+                    <button id="program-quiz" class="enroll-btn">
+                        <span class="quiz-icon">🎯</span>
+                        Find Your Program
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Program Roadmap -->
+            <div class="program-roadmap">
+                <h3>Your Cybersecurity Journey</h3>
+                <div class="roadmap-container">
+                    <div class="roadmap-step active" data-step="1">
+                        <div class="step-icon">🎯</div>
+                        <div class="step-title">Certificate</div>
+                        <div class="step-duration">3 Months</div>
+                        <div class="step-arrow">→</div>
+                    </div>
+                    <div class="roadmap-step" data-step="2">
+                        <div class="step-icon">🎓</div>
+                        <div class="step-title">Diploma</div>
+                        <div class="step-duration">6 Months</div>
+                        <div class="step-arrow">→</div>
+                    </div>
+                    <div class="roadmap-step" data-step="3">
+                        <div class="step-icon">🚀</div>
+                        <div class="step-title">Advanced</div>
+                        <div class="step-duration">9 Months</div>
+                        <div class="step-arrow">→</div>
+                    </div>
+                    <div class="roadmap-step" data-step="4">
+                        <div class="step-icon">🏆</div>
+                        <div class="step-title">PG Diploma</div>
+                        <div class="step-duration">12 Months</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Why Choose Baftis Academy Section -->
+    <section class="why-baftis-section" id="why-choose-baftis">
+        <div class="why-baftis-container">
+            <div class="why-baftis-header">
+                <h2 class="why-baftis-title">Why Choose Baftis Academy?</h2>
+                <div class="why-baftis-subtitle">Empowering You with Real-World Cybersecurity Skills</div>
+            </div>
+            <div class="why-baftis-features">
+                <div class="why-feature-card">
+                    <div class="why-feature-icon">🛠️</div>
+                    <div class="why-feature-title">Hands-on Classes with Real-World Tools</div>
+                    <div class="why-feature-desc">Work directly with industry-standard cybersecurity tools like <strong>Kali Linux</strong>, <strong>Metasploit</strong>, <strong>Burp Suite</strong>, and <strong>Wireshark</strong>.</div>
+                </div>
+                <div class="why-feature-card">
+                    <div class="why-feature-icon">👨‍🏫</div>
+                    <div class="why-feature-title">Small Batch Sizes</div>
+                    <div class="why-feature-desc">Personalized learning experience with individual attention and mentorship in every class.</div>
+                </div>
+                <div class="why-feature-card">
+                    <div class="why-feature-icon">🎓</div>
+                    <div class="why-feature-title">Get Certified with Cyber Moksha</div>
+                    <div class="why-feature-desc">Earn industry-recognized certification in partnership with <strong>Cyber Moksha</strong>, a National Cyber Research & Development Center.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Location Section -->
+    <section class="location-section" id="location" style="background: var(--color-bg-alt); padding: 4rem 2rem; text-align: center;">
+        <div class="location-contact-wrapper" style="display: flex; flex-wrap: wrap; gap: 2.5rem; justify-content: center; align-items: stretch; max-width: 1200px; margin: 0 auto;">
+            <div class="contact-info" style="flex: 1 1 320px; background: var(--color-surface); border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 2.5rem 2rem; min-width: 300px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left;">
+                <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--color-text-strong); margin-bottom: 1.2rem;">Contact Us Today</h2>
+                <div style="font-size: 1.1rem; color: var(--color-text-mid); margin-bottom: 1.2rem; display: flex; align-items: flex-start; gap: 0.7rem;"><span style="font-size:1.3rem;">📍</span>2nd Floor - Taj Arcade, Bakery Junction, Thiruvananthapuram - 695033, Kerala - India.</div>
+                <div style="font-size: 1.1rem; color: var(--color-text-mid); margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.7rem;"><span style="font-size:1.3rem;">📞</span> <span>Phone: <a href="tel:8606100218" style="color:var(--color-primary);text-decoration:none;">8606100218</a></span></div>
+                <div style="font-size: 1.1rem; color: var(--color-text-mid); margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.7rem;"><span style="font-size:1.3rem;">📩</span> <span>Email: <a href="mailto:info@cybermoksha.in" style="color:var(--color-primary);text-decoration:none;">info@cybermoksha.in</a></span></div>
+                <div style="font-size: 1.1rem; color: var(--color-text-mid); margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.7rem;"><span style="font-size:1.3rem;">🌐</span> <span>Website: <a href="https://www.cybermoksha.in" target="_blank" style="color:var(--color-primary);text-decoration:none;">www.cybermoksha.in</a></span></div>
+            </div>
+            <div class="map-embed" style="flex: 2 1 400px; min-width: 320px; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); background: var(--color-surface-muted); display: flex; align-items: center; justify-content: center;">
+                <iframe
+                    src="https://www.google.com/maps?q=Baftis+Academy,+Taj+Arcade,+Bakery+Junction,+Trivandrum&output=embed"
+                    width="100%" height="400" style="border:0; min-height: 400px; width:100%;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </section>
+
+
+        <!-- FAQ Section -->
+    <section class="faq-section" id="faq" style="background: var(--color-bg-page); padding: 4rem 2rem; text-align: center;">
+            <div class="faq-container" style="max-width: 900px; margin: 0 auto;">
+                <div class="faq-header" style="margin-bottom: 2.5rem;">
+                    <h2 class="faq-title" style="font-size: 2.3rem; font-weight: 700; color: var(--color-text-strong); margin-bottom: 0.5rem;">Frequently Asked Questions</h2>
+                    <div class="faq-subtitle" style="font-size: 1.1rem; color: var(--color-text-muted);">Your questions answered</div>
+                </div>
+                <div class="faq-list" role="list">
+                    <div class="faq-item" role="listitem">
+                        <h3 style="margin:0;">
+                            <button class="faq-question-button" aria-expanded="false" aria-controls="faq-panel-1" id="faq-control-1">
+                                <span class="faq-question-text">Who can join these courses?</span>
+                                <span class="faq-indicator" aria-hidden="true">+</span>
+                            </button>
+                        </h3>
+                        <div id="faq-panel-1" class="faq-answer-wrapper" role="region" aria-labelledby="faq-control-1">
+                            <div class="faq-answer">Anyone who has passed +2 (Higher Secondary) can join.</div>
+                        </div>
+                    </div>
+                    <div class="faq-item" role="listitem">
+                        <h3 style="margin:0;">
+                            <button class="faq-question-button" aria-expanded="false" aria-controls="faq-panel-2" id="faq-control-2">
+                                <span class="faq-question-text">Are the certificates recognized?</span>
+                                <span class="faq-indicator" aria-hidden="true">+</span>
+                            </button>
+                        </h3>
+                        <div id="faq-panel-2" class="faq-answer-wrapper" role="region" aria-labelledby="faq-control-2">
+                            <div class="faq-answer">Yes, through Cyber Moksha, recognized by NCSS as a National Cyber Research and Development Center.</div>
+                        </div>
+                    </div>
+                    <div class="faq-item" role="listitem">
+                        <h3 style="margin:0;">
+                            <button class="faq-question-button" aria-expanded="false" aria-controls="faq-panel-3" id="faq-control-3">
+                                <span class="faq-question-text">Do you teach online or offline?</span>
+                                <span class="faq-indicator" aria-hidden="true">+</span>
+                            </button>
+                        </h3>
+                        <div id="faq-panel-3" class="faq-answer-wrapper" role="region" aria-labelledby="faq-control-3">
+                            <div class="faq-answer">Offline classes in Trivandrum with practical learning.</div>
+                        </div>
+                    </div>
+                    <div class="faq-item" role="listitem">
+                        <h3 style="margin:0;">
+                            <button class="faq-question-button" aria-expanded="false" aria-controls="faq-panel-4" id="faq-control-4">
+                                <span class="faq-question-text">Is prior technical knowledge required?</span>
+                                <span class="faq-indicator" aria-hidden="true">+</span>
+                            </button>
+                        </h3>
+                        <div id="faq-panel-4" class="faq-answer-wrapper" role="region" aria-labelledby="faq-control-4">
+                            <div class="faq-answer">No. We start from basics and guide you step by step.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lead Generation Form Section -->
+        <section class="lead-form-section" id="enquire">
+            <div class="lead-form-container">
+                <div class="lead-form-header">
+                    <h2 class="lead-form-title">Request a Call Back</h2>
+                    <p class="lead-form-sub">Fill in your details & our admissions team will contact you shortly.</p>
+                </div>
+                <div id="leadSuccess" class="success-banner" role="alert" aria-live="polite">✅ <span>Thank you! Your request has been received.</span></div>
+                <form id="leadGenForm" novalidate>
+                    <div class="lead-grid">
+                        <div class="form-field">
+                            <label for="leadName">Name *</label>
+                            <input type="text" id="leadName" name="name" class="form-input" autocomplete="name" required aria-required="true" placeholder="Your full name" />
+                            <div class="error-text">Please enter your name.</div>
+                        </div>
+                        <div class="form-field">
+                            <label for="leadPhone">Phone Number *</label>
+                            <input type="tel" id="leadPhone" name="phone" class="form-input" inputmode="tel" required aria-required="true" placeholder="e.g. 9876543210" pattern="^[0-9\s+()-]{7,16}$" />
+                            <div class="error-text">Enter a valid phone number.</div>
+                        </div>
+                        <div class="form-field">
+                            <label for="leadEmail">Email *</label>
+                            <input type="email" id="leadEmail" name="email" class="form-input" autocomplete="email" required aria-required="true" placeholder="you@example.com" />
+                            <div class="error-text">Enter a valid email address.</div>
+                        </div>
+                        <div class="form-field">
+                            <label for="leadEducation">Education Level *</label>
+                            <select id="leadEducation" name="educationLevel" class="form-select" required aria-required="true">
+                                <option value="" disabled selected>Select Education Level</option>
+                                <option value="Plus Two">+2 Pass</option>
+                                <option value="Graduate">Graduate</option>
+                                <option value="Post Graduate">Post Graduate</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="error-text">Please select an education level.</div>
+                        </div>
+                        <div class="form-field full">
+                            <label for="leadBackground">Field of Study / Background</label>
+                            <input type="text" id="leadBackground" name="background" class="form-input" placeholder="e.g. Computer Science, Commerce, BBA, etc." />
+                        </div>
+                        <div class="form-field">
+                            <label for="leadCourse">Interested Course *</label>
+                            <select id="leadCourse" name="interestedCourse" class="form-select" required aria-required="true">
+                                <option value="" disabled selected>Select a Course</option>
+                                <option>Certificate in Cybersecurity</option>
+                                <option>Diploma in Cybersecurity & Ethical Hacking</option>
+                                <option>Advanced Diploma in Cybersecurity & Ethical Hacking</option>
+                                <option>PG Diploma in Cybersecurity & Ethical Hacking</option>
+                                <option>Not Sure Yet</option>
+                            </select>
+                            <div class="error-text">Please choose a course.</div>
+                        </div>
+                        <div class="form-field full">
+                            <label for="leadMessage">Message</label>
+                            <textarea id="leadMessage" name="message" class="form-textarea" placeholder="Share any questions or goals..."></textarea>
+                        </div>
+                    </div>
+                    <div class="lead-form-actions">
+                        <button type="submit" class="lead-submit" aria-label="Submit lead form and request a call back">📞 Request a Call Back</button>
+                        <div class="consent-note">By submitting this form you agree to be contacted by phone or email regarding admissions & program details. Your information is kept confidential.</div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    <!-- Removed empty main content block to close vertical gap before footer -->
+
+        <footer class="site-footer" id="footer">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="assets/images/Baftis_Name.png" alt="BAFTIS Logo" class="footer-logo" />
+                    <p class="footer-tagline">Building the next generation of cybersecurity professionals with immersive, hands-on training powered by strong industry partnerships.</p>
+                    <div class="social-links" aria-label="Social media links">
+                        <a href="#" aria-label="Facebook">f</a>
+                        <a href="#" aria-label="LinkedIn">in</a>
+                        <a href="#" aria-label="Instagram">IG</a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="footer-heading">Explore</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#courses">Courses</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#enquire">Enquire</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-heading">Programs</h3>
+                    <ul class="footer-links">
+                        <li><a href="#courses">Certificate</a></li>
+                        <li><a href="#courses">Diploma</a></li>
+                        <li><a href="#courses">Advanced Diploma</a></li>
+                        <li><a href="#courses">PG Diploma</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3 class="footer-heading">Contact</h3>
+                    <div>📍 <span>2nd Floor - Taj Arcade,<br/> Bakery Junction, Thiruvananthapuram - 695033, Kerala - India.</span></div>
+                    <div>📞 <span><a href="tel:8606100218">8606100218</a></span></div>
+                    <div>📩 <span><a href="mailto:info@cybermoksha.in">info@cybermoksha.in</a></span></div>
+                    <div>🌐 <span><a href="https://www.cybermoksha.in" target="_blank" rel="noopener">cybermoksha.in</a></span></div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; <span id="yearCopy"></span> Baftis Academy. All rights reserved.</div>
+                <div>Website Designed by <a href="https://www.brinit.in" target="_blank" rel="noopener">Brin'IT</a></div>
+            </div>
+        </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile navigation logic
+        (function(){
+            const toggle = document.querySelector('.nav-toggle');
+            const menu = document.getElementById('primary-navigation');
+            const backdrop = document.querySelector('.mobile-backdrop');
+            if(!toggle || !menu || !backdrop) return;
+            let lastFocusedBeforeOpen = null;
+
+            function openMenu(){
+                menu.classList.add('open');
+                toggle.classList.add('active');
+                backdrop.classList.add('show');
+                document.body.classList.add('menu-open');
+                toggle.setAttribute('aria-expanded','true');
+                lastFocusedBeforeOpen = document.activeElement;
+                // Focus first link
+                const firstLink = menu.querySelector('a');
+                firstLink && firstLink.focus();
+                trapFocus();
+            }
+            function closeMenu(){
+                menu.classList.remove('open');
+                toggle.classList.remove('active');
+                backdrop.classList.remove('show');
+                document.body.classList.remove('menu-open');
+                toggle.setAttribute('aria-expanded','false');
+                lastFocusedBeforeOpen && lastFocusedBeforeOpen.focus();
+                releaseTrap();
+            }
+            toggle.addEventListener('click', ()=>{
+                const isOpen = menu.classList.contains('open');
+                isOpen ? closeMenu() : openMenu();
+            });
+            backdrop.addEventListener('click', closeMenu);
+            menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeMenu));
+            document.addEventListener('keydown', e=>{
+                if(e.key === 'Escape' && menu.classList.contains('open')) closeMenu();
+            });
+
+            // Focus trap
+            let focusTrapHandler = null;
+            function trapFocus(){
+                const focusableSelectors = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+                focusTrapHandler = function(e){
+                    if(!menu.classList.contains('open')) return;
+                    if(e.key !== 'Tab') return;
+                    const focusables = Array.from(menu.querySelectorAll(focusableSelectors));
+                    if(!focusables.length) return;
+                    const first = focusables[0];
+                    const last = focusables[focusables.length - 1];
+                    if(e.shiftKey && document.activeElement === first){
+                        e.preventDefault(); last.focus();
+                    } else if(!e.shiftKey && document.activeElement === last){
+                       
+                        e.preventDefault(); first.focus();
+                    }
+                };
+                document.addEventListener('keydown', focusTrapHandler);
+            }
+            function releaseTrap(){
+                if(focusTrapHandler){
+                    document.removeEventListener('keydown', focusTrapHandler);
+                    focusTrapHandler = null;
+                }
+            }
+        })();
+
+        // Enhanced Program card interactions
+        document.querySelectorAll('.program-card').forEach(card => {
+            let isAnimating = false;
+            
+            card.addEventListener('click', function() {
+                if (isAnimating) return;
+                isAnimating = true;
+                
+                // Add click effect with ripple
+                this.style.transform = 'scale(0.95)';
+                
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(102, 126, 234, 0.3)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.left = '50%';
+                ripple.style.top = '50%';
+                ripple.style.width = '100px';
+                ripple.style.height = '100px';
+                ripple.style.marginLeft = '-50px';
+                ripple.style.marginTop = '-50px';
+                ripple.style.pointerEvents = 'none';
+                ripple.style.zIndex = '10';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    this.style.transform = '';
+                    ripple.remove();
+                    isAnimating = false;
+                }, 150);
+            });
+
+            // Add hover effects
+            card.addEventListener('mouseenter', function() {
+                this.style.cursor = 'pointer';
+                
+                // Add floating animation to icon
+                const icon = this.querySelector('.program-icon');
+                if (icon) {
+                    icon.style.animation = 'float 2s ease-in-out infinite';
+                }
+            });
+
+            card.addEventListener('mouseleave', function() {
+                // Remove floating animation
+                const icon = this.querySelector('.program-icon');
+                if (icon) {
+                    icon.style.animation = '';
+                }
+            });
+
+            // Add keyboard navigation
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+        });
+
+        // Program Quiz System
+        (function() {
+            const programQuiz = document.getElementById('program-quiz');
+            const roadmapSteps = document.querySelectorAll('.roadmap-step');
+
+            // Program matching quiz
+            function showProgramQuiz() {
+                const quizModal = document.createElement('div');
+                quizModal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+
+                const quizContent = document.createElement('div');
+                quizContent.style.cssText = `
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 15px;
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    transform: scale(0.7);
+                    transition: transform 0.3s ease;
+                `;
+
+                const questions = [
+                    {
+                        question: "What's your current educational background?",
+                        options: ["+2 Pass", "Bachelor's Degree", "Master's Degree", "Other"]
+                    },
+                    {
+                        question: "How much time can you dedicate to learning?",
+                        options: ["3 months", "6 months", "9 months", "12 months"]
+                    },
+                    {
+                        question: "What's your primary career goal?",
+                        options: ["Entry-level security role", "Technical specialist", "Management position", "Consulting"]
+                    },
+                    {
+                        question: "What's your experience with technology?",
+                        options: ["Beginner", "Some experience", "Experienced", "Expert"]
+                    }
+                ];
+
+                let currentQuestion = 0;
+                let answers = [];
+
+                function showQuestion() {
+                    if (currentQuestion >= questions.length) {
+                        showResults();
+                        return;
+                    }
+
+                    const q = questions[currentQuestion];
+                    quizContent.innerHTML = `
+                        <h3 style="color: #333; margin-bottom: 1.5rem;">Question ${currentQuestion + 1} of ${questions.length}</h3>
+                        <p style="color: #666; margin-bottom: 2rem; font-size: 1.1rem;">${q.question}</p>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            ${q.options.map((option, index) => `
+                                <button class="quiz-option" data-answer="${index}" style="
+                                    background: #f8f9fa;
+                                    border: 2px solid #e9ecef;
+                                    padding: 1rem;
+                                    border-radius: 10px;
+                                    cursor: pointer;
+                                    text-align: left;
+                                    font-size: 1rem;
+                                    transition: all 0.3s ease;
+                                ">${option}</button>
+                            `).join('')}
+                        </div>
+                    `;
+
+                    // Add event listeners to options
+                    quizContent.querySelectorAll('.quiz-option').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            answers.push(parseInt(this.dataset.answer));
+                            currentQuestion++;
+                            showQuestion();
+                        });
+
+                        btn.addEventListener('mouseenter', function() {
+                            this.style.background = '#e3f2fd';
+                            this.style.borderColor = '#2196f3';
+                        });
+
+                        btn.addEventListener('mouseleave', function() {
+                            this.style.background = '#f8f9fa';
+                            this.style.borderColor = '#e9ecef';
+                        });
+                    });
+                }
+
+                function showResults() {
+                    const totalScore = answers.reduce((sum, answer) => sum + answer, 0);
+                    let recommendedProgram = '';
+
+                    if (totalScore <= 4) {
+                        recommendedProgram = 'Certificate in Cybersecurity';
+                    } else if (totalScore <= 8) {
+                        recommendedProgram = 'Diploma in Cybersecurity & Ethical Hacking';
+                    } else if (totalScore <= 12) {
+                        recommendedProgram = 'Advanced Diploma in Cybersecurity & Ethical Hacking';
+                    } else {
+                        recommendedProgram = 'PG Diploma in Cybersecurity & Ethical Hacking';
+                    }
+
+                    quizContent.innerHTML = `
+                        <h3 style="color: #333; margin-bottom: 1.5rem;">🎯 Your Perfect Match!</h3>
+                        <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+                            <h4 style="color: #2e7d32; margin-bottom: 1rem;">Recommended Program:</h4>
+                            <p style="color: #2e7d32; font-size: 1.2rem; font-weight: 600;">${recommendedProgram}</p>
+                        </div>
+                        <p style="color: #666; margin-bottom: 2rem;">Based on your answers, this program aligns best with your goals and experience level.</p>
+                        <button id="closeQuiz" style="
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            padding: 0.8rem 2rem;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        ">Close & Explore Programs</button>
+                    `;
+
+                    const closeBtn = quizContent.querySelector('#closeQuiz');
+                    closeBtn.addEventListener('click', () => {
+                        quizModal.style.opacity = '0';
+                        quizContent.style.transform = 'scale(0.7)';
+                        setTimeout(() => {
+                            quizModal.remove();
+                        }, 300);
+                    });
+                }
+
+                quizModal.appendChild(quizContent);
+                document.body.appendChild(quizModal);
+
+                // Animate modal in
+                setTimeout(() => {
+                    quizModal.style.opacity = '1';
+                    quizContent.style.transform = 'scale(1)';
+                }, 10);
+
+                showQuestion();
+
+                // Close modal on overlay click
+                quizModal.addEventListener('click', (e) => {
+                    if (e.target === quizModal) {
+                        quizModal.style.opacity = '0';
+                        quizContent.style.transform = 'scale(0.7)';
+                        setTimeout(() => {
+                            quizModal.remove();
+                        }, 300);
+                    }
+                });
+            }
+
+
+
+            // Interactive roadmap
+            roadmapSteps.forEach((step, index) => {
+                step.addEventListener('click', function() {
+                    // Remove active class from all steps
+                    roadmapSteps.forEach(s => s.classList.remove('active'));
+                    // Add active class to clicked step
+                    this.classList.add('active');
+                    
+
+                });
+
+                step.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+
+                step.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Event listeners
+            if (programQuiz) programQuiz.addEventListener('click', showProgramQuiz);
+        })();
+
+        // Enhanced Enroll button interactions
+        document.querySelectorAll('.enroll-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Add button click effect
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 100);
+                
+                // Show enrollment modal or form
+                showEnrollmentModal();
+            });
+
+            // Add keyboard support
+            btn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+        });
+
+        // Enrollment modal function
+        function showEnrollmentModal() {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 2rem;
+                border-radius: 15px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                transform: scale(0.7);
+                transition: transform 0.3s ease;
+            `;
+
+            modalContent.innerHTML = `
+                <h3 style="color: #333; margin-bottom: 1rem;">🎯 Enroll in Program</h3>
+                <p style="color: #666; margin-bottom: 2rem;">Thank you for your interest! Our team will contact you soon with enrollment details.</p>
+                <button id="closeModal" style="
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 2rem;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                ">Close</button>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Animate modal in
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+            }, 10);
+
+            // Close modal functionality
+            const closeBtn = modalContent.querySelector('#closeModal');
+            closeBtn.addEventListener('click', () => {
+                modal.style.opacity = '0';
+                modalContent.style.transform = 'scale(0.7)';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            });
+
+            // Close modal on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.opacity = '0';
+                    modalContent.style.transform = 'scale(0.7)';
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 300);
+                }
+            });
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', function closeOnEscape(e) {
+                if (e.key === 'Escape') {
+                    modal.style.opacity = '0';
+                    modalContent.style.transform = 'scale(0.7)';
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 300);
+                    document.removeEventListener('keydown', closeOnEscape);
+                }
+            });
+        }
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-5px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // FAQ Accordion Interactivity
+        (function(){
+            const faqItems = document.querySelectorAll('.faq-item');
+            if(!faqItems.length) return;
+
+            function closeAll(except){
+                faqItems.forEach(item => {
+                    if(item === except) return;
+                    const btn = item.querySelector('.faq-question-button');
+                    const panel = item.querySelector('.faq-answer-wrapper');
+                    if(btn && panel){
+                        btn.setAttribute('aria-expanded','false');
+                        item.classList.remove('open');
+                        panel.style.maxHeight = 0;
+                    }
+                });
+            }
+
+            faqItems.forEach(item => {
+                const button = item.querySelector('.faq-question-button');
+                const panel = item.querySelector('.faq-answer-wrapper');
+                if(!button || !panel) return;
+
+                // Ensure collapsed initial state
+                panel.style.maxHeight = 0;
+
+                button.addEventListener('click', () => {
+                    const isOpen = button.getAttribute('aria-expanded') === 'true';
+                    if(isOpen){
+                        button.setAttribute('aria-expanded','false');
+                        item.classList.remove('open');
+                        panel.style.maxHeight = 0;
+                    } else {
+                        closeAll(item); // only one open at a time
+                        button.setAttribute('aria-expanded','true');
+                        item.classList.add('open');
+                        // set max-height to scrollHeight for smooth animation
+                        panel.style.maxHeight = panel.scrollHeight + 'px';
+                    }
+                });
+
+                // Keyboard toggle with Enter/Space handled automatically by button
+                // Adjust height on window resize when open
+                window.addEventListener('resize', () => {
+                    if(button.getAttribute('aria-expanded') === 'true'){
+                        panel.style.maxHeight = panel.scrollHeight + 'px';
+                    }
+                });
+            });
+        })();
+
+        // Lead Gen Form Logic
+        (function(){
+            const form = document.getElementById('leadGenForm');
+            if(!form) return;
+            const successBanner = document.getElementById('leadSuccess');
+            const submitBtn = form.querySelector('.lead-submit');
+
+            function setInvalid(field){
+                field.closest('.form-field')?.classList.add('invalid');
+            }
+            function clearInvalid(field){
+                field.closest('.form-field')?.classList.remove('invalid');
+            }
+            function validateField(field){
+                clearInvalid(field);
+                if(field.hasAttribute('required')){
+                    if(!field.value.trim()) { setInvalid(field); return false; }
+                }
+                if(field.type === 'email' && field.value){
+                    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
+                    if(!emailOk){ setInvalid(field); return false; }
+                }
+                if(field.type === 'tel' && field.value){
+                    const telOk = /^[0-9\s+()\-]{7,16}$/.test(field.value.trim());
+                    if(!telOk){ setInvalid(field); return false; }
+                }
+                return true;
+            }
+            form.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+                el.addEventListener('input', () => validateField(el));
+                el.addEventListener('blur', () => validateField(el));
+            });
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                let allValid = true;
+                form.querySelectorAll('[required]').forEach(f => { if(!validateField(f)) allValid = false; });
+                if(!allValid) {
+                    const firstInvalid = form.querySelector('.form-field.invalid .form-input, .form-field.invalid .form-select');
+                    firstInvalid?.focus();
+                    return;
+                }
+                // Simulate async submit
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '.7';
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Submitting...';
+                setTimeout(() => {
+                    // Show success
+                    successBanner.classList.add('show');
+                    // Reset form
+                    form.reset();
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.textContent = originalText;
+                    // Auto hide after 6s
+                    setTimeout(()=> successBanner.classList.remove('show'), 6000);
+                }, 1100);
+            });
+        })();
+
+    // Set dynamic year in footer
+    document.getElementById('yearCopy').textContent = new Date().getFullYear();
+
+    // Smooth scroll with navbar offset (for browsers that ignore scroll-margin on some elements)
+    (function(){
+        const navbar = document.querySelector('.navbar');
+        const navHeight = () => navbar ? navbar.offsetHeight + 10 : 0; // extra spacing
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            const hash = link.getAttribute('href');
+            if(hash === '#' || hash.length < 2) return;
+            const target = document.querySelector(hash);
+            if(!target) return;
+            link.addEventListener('click', function(e){
+                // Only handle same-page anchors (normalize potential backslashes on Windows)
+                const currentPath = location.pathname.replace(/\\+/g,'/');
+                const linkPath = this.pathname.replace(/\\+/g,'/');
+                if(currentPath === linkPath && location.hostname === this.hostname){
+                    e.preventDefault();
+                    const top = target.getBoundingClientRect().top + window.scrollY - navHeight();
+                    window.scrollTo({ top, behavior: 'smooth' });
+                    // Set focus for accessibility after scroll
+                    setTimeout(()=>{ target.setAttribute('tabindex','-1'); target.focus({preventScroll:true}); }, 600);
+                }
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

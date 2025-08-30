@@ -161,7 +161,7 @@
             body.menu-open { overflow: hidden; }
             .mobile-backdrop {
                 position: fixed; inset: 0; background: rgba(0,0,0,.55); /* slightly darker since blur removed */
-                opacity: 0; transition: opacity .35s ease; z-index: 1400; pointer-events: none;
+                opacity: 0; transition: opacity .35s ease; z-index: 100; pointer-events: none;
             }
             .mobile-backdrop.show { opacity: 1; pointer-events: auto; }
         }
@@ -462,11 +462,65 @@
             justify-content: center;
         }
 
-    .highlight-item { display: flex; align-items: center; justify-content: center; background: var(--color-surface-muted); padding: 0.8rem 1.2rem; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .highlight-item { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        background: var(--color-bg-dark); 
+        padding: 0.8rem 1.2rem; 
+        border-radius: 20px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        color: var(--color-text-inverse);
+    }
+
+    /* Animated Background for Highlight Items */
+    .highlight-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(var(--color-accent-cyan-rgb), 0.05) 0%, transparent 50%);
+        animation: glowPulse 8s ease-in-out infinite;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .highlight-item::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(var(--color-accent-cyan-rgb), 0.1), transparent);
+        animation: dataFlow 15s linear infinite;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .highlight-icon {
+        position: relative;
+        z-index: 2;
+        margin-right: 0.5rem;
+    }
+
+    .highlight-text {
+        position: relative;
+        z-index: 2;
+        font-size: 1rem; 
+        font-weight: 500; 
+        color: var(--color-text-inverse);
+    }
 
 
 
-    .highlight-text { font-size: 1rem; font-weight: 500; color: var(--color-text-inverse); }
+
 
         .about-logo-section {
             flex: 0.5;
@@ -839,6 +893,41 @@
         }
 
         .enroll-btn:hover::before {
+            left: 100%;
+        }
+
+        .quiz-btn { background: rgb(var(--color-accent-cyan-rgb)); color: var(--color-bg-dark);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-btn:hover { background: rgba(var(--color-accent-cyan-rgb), 0.8); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,255,255,0.3); }
+
+        .quiz-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .quiz-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .quiz-btn:hover::before {
             left: 100%;
         }
 
@@ -1255,10 +1344,27 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+            background: var(--color-bg-dark);
             border-radius: 3px;
             transition: width 0.8s ease;
             position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background for Progress Fill */
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(var(--color-accent-cyan-rgb), 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(var(--color-accent-cyan-rgb), 0.05) 0%, transparent 50%);
+            animation: glowPulse 8s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .progress-fill::after {
@@ -1268,8 +1374,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
-            animation: shimmer 2s infinite;
+            background: linear-gradient(90deg, transparent, rgba(var(--color-accent-cyan-rgb), 0.1), transparent);
+            animation: dataFlow 15s linear infinite;
+            z-index: 1;
+            pointer-events: none;
         }
 
         @keyframes shimmer {
@@ -1373,10 +1481,15 @@
             }
 
             .step-arrow {
-                display: none;
+                display: block;
+                transform: rotate(90deg);
+                font-size: 1.2rem;
+                margin: 0.5rem auto 0;
             }
 
-
+            .roadmap-step:last-child .step-arrow {
+                display: none;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1707,7 +1820,7 @@
                 <div class="program-tools-content">
                     <h3 class="program-tools-title">Not Sure Which Program is Right for You?</h3>
                     <p class="program-tools-subtitle">Take our quick assessment to find the perfect cybersecurity program that matches your goals and experience level.</p>
-                    <button id="program-quiz" class="enroll-btn">
+                    <button id="program-quiz" class="quiz-btn">
                         <span class="quiz-icon">🎯</span>
                         Find Your Program
                     </button>
